@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="context-box">
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>NAME</th>
+            <th>TOKEN</th>
+        </tr>
+        <tbody id="mainbody">
+        <tr th:each="person : ${persons}">
+            <td class="id" th:text="${person.id}"></td>
+            <td th:text="${person.name}"></td>
+            <td th:text="${person.token}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    var arr = document.getElementsByClassName('id');
+    // Определяем последний элемент
+    var lastId = arr[arr.length - 1].innerHTML - 1;
+
+    //Функция загрузки при наведении мыши
+    function addListenerOnLastElement(array) {
+        array[array.length - 1].addEventListener("mouseover", load)
+    }
+
+    //Запускаем листенер на массиве
+    addListenerOnLastElement(arr);
+
+    //Загрузка
+    function load(evt) {
+        var httpRequest = new XMLHttpRequest();
+        var url = "http://localhost:8080/" + lastId;
+        httpRequest.open("GET", url);
+        httpRequest.setRequestHeader("Content-type", "application/json");
+
+        //Работаем с ответом
+        httpRequest.onload = function (ev) {
+            var jsonResponse = JSON.parse(httpRequest.responseText);
+            //Создаем элемент для TR
+            if (jsonResponse != 0 && jsonResponse.length > 0) {
+                for (var i = 0; i < jsonResponse.length; i++) {
+                    var newTR = document.createElement('TR');
+                    newTR.innerHTML = "<td class='id'>" + jsonResponse[i].id + "</td>" +
+                        "<td>" + jsonResponse[i].name + "</td>" +
+                        "<td>" + jsonResponse[i].token + "</td>";
+                    document.getElementById('mainbody').appendChild(newTR);
+                }
+
+                //Присваеваем новые значения
+                arr = document.getElementsByClassName('id');
+                lastId = arr[arr.length - 1].innerHTML - 1;
+                addListenerOnLastElement(arr);
+            }
+        };
+        //Отправляем запрос
+        httpRequest.send();
+        arr[arr.length - 1].removeEventListener("mouseover", load);
+    }
+</script>
+
+</body>
+</html>
